@@ -9,7 +9,6 @@ import {
   clinicalEpisodes,
   patients,
   promSubmissions,
-  users,
 } from "../db/schema.js";
 import { assertClinicAccess, requireAuthUser } from "../middleware/auth.js";
 import { hashNric, validateNricChecksum } from "../lib/nric.js";

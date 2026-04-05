@@ -21,6 +21,7 @@ export function Button({
   variant = "primary",
   children,
   style,
+  type = "button",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
@@ -37,7 +38,7 @@ export function Button({
             border: "1px solid var(--bark)",
           };
   return (
-    <button type="button" className="oc-focus-ring" style={{ ...base, ...v, ...style }} {...props}>
+    <button type={type} className="oc-focus-ring" style={{ ...base, ...v, ...style }} {...props}>
       {children}
     </button>
   );
