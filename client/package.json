@@ -1,0 +1,30 @@
+{
+  "name": "@orthocare/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@orthocare/server": "workspace:*",
+    "@orthocare/shared": "workspace:*",
+    "@tanstack/react-query": "^5.64.2",
+    "@trpc/client": "^11.0.0-rc.700",
+    "@trpc/react-query": "^11.0.0-rc.700",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.1",
+    "superjson": "^2.2.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
