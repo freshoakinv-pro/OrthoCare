@@ -30,5 +30,5 @@ if (isProd) {
 }
 
 app.listen(port, () => {
-  console.log(`OrthoCare server (step 1) listening on :${port}`);
+  console.log(`OrthoCare Orchestrator listening on :${port}`);
 });
