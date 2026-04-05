@@ -1,7 +1,11 @@
 # OrthoCare Orchestrator
 
-Monorepo: `client/` (Vite + React 19), `server/` (Express + tRPC + Drizzle), `shared/` (types).
+## Step 1 (current)
 
-**Local:** copy `.env.example` to `.env` in repo root (or set env for the server). Run `pnpm install`, `pnpm run db:migrate` with MySQL reachable, `pnpm run db:seed` for PROM catalog, then `pnpm run dev` (or `pnpm run build` + `pnpm run start`).
+pnpm monorepo with `client/`, `server/`, `shared/`, plus `railway.toml` for Railway (Nixpacks).
 
-**Railway:** set `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and `CLIENT_ORIGIN` to your deployed web URL. Migrations run on server startup; use `pnpm run db:seed` once after first deploy if PROM tables are empty.
+- **Build:** `pnpm install && pnpm run build`
+- **Start:** `pnpm run start` (Express on `PORT`, default 3001)
+- **Health:** `GET /api/health` → `{ status, timestamp, db }` (`db` is `"error"` until a database is wired in a later step)
+
+Local dev: `pnpm run dev` (Vite + server with hot reload).
