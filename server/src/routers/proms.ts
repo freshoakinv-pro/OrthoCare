@@ -38,6 +38,30 @@ export const promsRouter = router({
     return db.select().from(promTypes).orderBy(asc(promTypes.code));
   }),
 
+  getScheduleById: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const db = getDb();
+      const [sch] = await db
+        .select()
+        .from(promSchedules)
+        .where(eq(promSchedules.id, input.id))
+        .limit(1);
+      if (!sch) throw new TRPCError({ code: "NOT_FOUND", message: "Schedule not found" });
+      const u = requireAuthUser(ctx);
+      if (u.role === "PATIENT") {
+        const [pat] = await db
+          .select()
+          .from(patients)
+          .where(and(eq(patients.userId, u.userId), eq(patients.id, sch.patientId)))
+          .limit(1);
+        if (!pat) throw new TRPCError({ code: "FORBIDDEN", message: "Forbidden" });
+      } else {
+        assertClinicAccess(ctx, sch.clinicId);
+      }
+      return sch;
+    }),
+
   getSchedules: protectedProcedure
     .input(
       z.object({

@@ -9,7 +9,9 @@ import { createContext } from "./middleware/context.js";
 import { appRouter } from "./root.js";
 import { runMigrations } from "./db/migrate.js";
 import { checkDbConnection, getDb } from "./db/index.js";
+import { seedDatabase } from "./db/seed.js";
 import { isProd } from "./lib/env.js";
+import { startReminderJob } from "./jobs/reminderJob.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -75,6 +77,8 @@ async function main() {
     getDb();
     await runMigrations();
     console.log("Migrations applied");
+    await seedDatabase({ reset: false });
+    startReminderJob();
   } catch (e) {
     console.error("Migration failed:", e);
     process.exit(1);

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { createHash, randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getDb } from "./index.js";
 import { runMigrations } from "./migrate.js";
 import {
@@ -40,10 +40,22 @@ async function clearData() {
   await db.delete(clinics);
 }
 
-async function seed() {
-  await runMigrations();
+export async function seedDatabase(opts: { reset: boolean }) {
   const db = getDb();
-  await clearData();
+  if (opts.reset) {
+    await clearData();
+  } else {
+    const [{ c }] = await db.select({ c: sql<number>`count(*)`.mapWith(Number) }).from(clinics);
+    if (c > 0) {
+      console.log("Database already seeded, skipping.");
+      return;
+    }
+  }
+
+  await runSeedBody(db);
+}
+
+async function runSeedBody(db: ReturnType<typeof getDb>) {
 
   const clinicId = randomUUID();
   await db.insert(clinics).values({
@@ -324,10 +336,41 @@ async function seed() {
     },
   ]);
 
-  console.log("Seed complete: clinic, users, patients, episodes, PROM catalog, submissions.");
+  const sched1 = randomUUID();
+  const sched2 = randomUUID();
+  await db.insert(promSchedules).values([
+    {
+      id: sched1,
+      clinicId,
+      patientId: pat1,
+      episodeId: ep1,
+      promTypeId: oksId,
+      frequency: "MONTHLY",
+      nextDueAt: new Date(now.getTime() - 86400000),
+      isActive: true,
+    },
+    {
+      id: sched2,
+      clinicId,
+      patientId: pat2,
+      episodeId: ep2,
+      promTypeId: ohsId,
+      frequency: "WEEKLY",
+      nextDueAt: new Date(now.getTime() - 86400000 * 3),
+      isActive: true,
+    },
+  ]);
+
+  console.log("Seed complete: clinic, users, patients, episodes, PROM catalog, submissions, schedules.");
 }
 
-seed().catch((e) => {
+async function main() {
+  await runMigrations();
+  const reset = process.argv.includes("--reset");
+  await seedDatabase({ reset });
+}
+
+main().catch((e) => {
   console.error(e);
   process.exit(1);
 });

@@ -38,6 +38,22 @@ function resolveClinicId(
 }
 
 export const patientsRouter = router({
+  me: protectedProcedure.query(async ({ ctx }) => {
+    requireRole(ctx, "PATIENT");
+    const u = requireAuthUser(ctx);
+    if (!u.clinicId) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "No clinic" });
+    }
+    const db = getDb();
+    const [pat] = await db
+      .select()
+      .from(patients)
+      .where(and(eq(patients.userId, u.userId), eq(patients.clinicId, u.clinicId)))
+      .limit(1);
+    if (!pat) throw new TRPCError({ code: "NOT_FOUND", message: "Patient profile not found" });
+    return pat;
+  }),
+
   list: protectedProcedure
     .input(
       z.object({
