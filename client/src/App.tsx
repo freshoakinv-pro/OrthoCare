@@ -10,6 +10,9 @@ import { PlaceholderPage } from "@/pages/_Placeholder";
 import PatientList from "@/pages/patients/PatientList";
 import PatientDetail from "@/pages/patients/PatientDetail";
 import RegisterPatient from "@/pages/patients/RegisterPatient";
+import PromQuestionnaire from "@/pages/proms/PromQuestionnaire";
+import PromSchedules from "@/pages/proms/PromSchedules";
+import PromResults from "@/pages/proms/PromResults";
 
 export default function App() {
   return (
@@ -24,13 +27,13 @@ export default function App() {
         <Route path="/patient/scores" element={<PlaceholderPage title="My Scores" />} />
         <Route path="/patient/appointments" element={<PlaceholderPage title="My appointments" />} />
         <Route path="/patient/pending-proms" element={<PlaceholderPage title="Pending PROMs" />} />
+        <Route path="/proms/questionnaire/:scheduleId" element={<PromQuestionnaire />} />
         <Route path="/patients" element={<PatientList />} />
         <Route path="/patients/register" element={<RegisterPatient />} />
         <Route path="/patients/:id" element={<PatientDetail />} />
         <Route path="/appointments" element={<PlaceholderPage title="Appointments" />} />
-        <Route path="/proms/schedules" element={<PlaceholderPage title="PROM schedules" />} />
-        <Route path="/proms/results" element={<PlaceholderPage title="PROM results" />} />
-        <Route path="/proms/questionnaire/:scheduleId" element={<PlaceholderPage title="Questionnaire" />} />
+        <Route path="/proms/schedules" element={<PromSchedules />} />
+        <Route path="/proms/results" element={<PromResults />} />
         <Route path="/notes" element={<PlaceholderPage title="Notes" />} />
         <Route path="/analytics" element={<PlaceholderPage title="Analytics" />} />
         <Route path="/clinics" element={<PlaceholderPage title="Clinics" />} />
