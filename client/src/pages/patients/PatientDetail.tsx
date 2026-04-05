@@ -10,7 +10,8 @@ import { Table, THead, TBody, Tr, Th, Td } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { JourneyTimeline, type TimelineEvent } from "@/components/patient/JourneyTimeline";
+import { JourneyTimeline } from "@/components/patient/JourneyTimeline";
+import { buildPatientTimelineEvents } from "@/lib/patientTimeline";
 import { formatSgtDateOnly, formatSgt } from "@/lib/datetime";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -50,58 +51,10 @@ export default function PatientDetail() {
     [q.data],
   );
 
-  const timelineEvents = useMemo(() => {
-    if (!q.data) return [];
-    const ev: TimelineEvent[] = [];
-    for (const e of q.data.episodes) {
-      ev.push({
-        id: `eo-${e.id}`,
-        at: e.openedAt,
-        kind: "EPISODE_OPEN",
-        label: `Episode opened`,
-        detail: e.diagnosisLabel,
-      });
-      if (e.closedAt) {
-        ev.push({
-          id: `ec-${e.id}`,
-          at: e.closedAt,
-          kind: "EPISODE_CLOSE",
-          label: "Episode closed",
-          detail: e.episodeStatus,
-        });
-      }
-    }
-    for (const a of q.data.allAppointments ?? []) {
-      ev.push({
-        id: `ap-${a.id}`,
-        at: a.scheduledAt,
-        kind: "APPOINTMENT",
-        label: a.appointmentType.replace(/_/g, " "),
-        appointmentType: a.appointmentType,
-        detail: a.notes ?? a.status,
-      });
-    }
-    for (const s of q.data.latestPromScores) {
-      ev.push({
-        id: `pr-${s.id}`,
-        at: s.submittedAt,
-        kind: "PROM",
-        label: "PROM submitted",
-        score: s.totalScore,
-        interpretation: s.scoreInterpretation,
-      });
-    }
-    for (const n of q.data.notes ?? []) {
-      ev.push({
-        id: `nt-${n.id}`,
-        at: n.createdAt,
-        kind: "NOTE",
-        label: n.noteType,
-        detail: n.content.slice(0, 200),
-      });
-    }
-    return ev;
-  }, [q.data]);
+  const timelineEvents = useMemo(
+    () => (q.data ? buildPatientTimelineEvents(q.data) : []),
+    [q.data],
+  );
 
   type SubRow = NonNullable<typeof q.data>["latestPromScores"][number];
   const promByType = useMemo(() => {

@@ -10,7 +10,7 @@ const redirectByRole: Record<string, string> = {
   CLINIC_ADMIN: "/dashboard/clinic",
   CLINIC_USER: "/dashboard/clinic-user",
   CLINIC_DOCTOR: "/dashboard/doctor",
-  PATIENT: "/patient/journey",
+  PATIENT: "/patient/my-journey",
 };
 
 export default function LoginPage() {

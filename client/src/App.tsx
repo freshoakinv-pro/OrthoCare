@@ -14,6 +14,10 @@ import PromQuestionnaire from "@/pages/proms/PromQuestionnaire";
 import PromSchedules from "@/pages/proms/PromSchedules";
 import PromResults from "@/pages/proms/PromResults";
 import AppointmentCalendar from "@/pages/appointments/AppointmentCalendar";
+import MyJourney from "@/pages/patient/MyJourney";
+import MyScores from "@/pages/patient/MyScores";
+import PendingProms from "@/pages/patient/PendingProms";
+import MyAppointments from "@/pages/patient/MyAppointments";
 
 export default function App() {
   return (
@@ -25,9 +29,10 @@ export default function App() {
         <Route path="/dashboard/clinic-user" element={<ClinicUserDashboard />} />
         <Route path="/dashboard/mso" element={<MsoDashboard />} />
         <Route path="/patient/journey" element={<PatientDashboard />} />
-        <Route path="/patient/scores" element={<PlaceholderPage title="My Scores" />} />
-        <Route path="/patient/appointments" element={<PlaceholderPage title="My appointments" />} />
-        <Route path="/patient/pending-proms" element={<PlaceholderPage title="Pending PROMs" />} />
+        <Route path="/patient/my-journey" element={<MyJourney />} />
+        <Route path="/patient/scores" element={<MyScores />} />
+        <Route path="/patient/appointments" element={<MyAppointments />} />
+        <Route path="/patient/pending-proms" element={<PendingProms />} />
         <Route path="/proms/questionnaire/:scheduleId" element={<PromQuestionnaire />} />
         <Route path="/patients" element={<PatientList />} />
         <Route path="/patients/register" element={<RegisterPatient />} />

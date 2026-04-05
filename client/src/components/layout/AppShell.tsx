@@ -35,7 +35,7 @@ const navByRole: Record<UserRole, { to: string; label: string }[]> = {
     { to: "/schedule", label: "Schedule" },
   ],
   PATIENT: [
-    { to: "/patient/journey", label: "My Journey" },
+    { to: "/patient/my-journey", label: "My Journey" },
     { to: "/patient/scores", label: "My Scores" },
     { to: "/patient/appointments", label: "Appointments" },
     { to: "/patient/pending-proms", label: "Complete PROMs" },
@@ -125,10 +125,7 @@ export function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={
-                item.to.startsWith("/dashboard/") ||
-                item.to === "/patient/journey"
-              }
+              end={item.to.startsWith("/dashboard/") || item.to.startsWith("/patient/")}
               style={({ isActive }: { isActive: boolean }) => ({
                 padding: "12px 20px",
                 textDecoration: "none",
