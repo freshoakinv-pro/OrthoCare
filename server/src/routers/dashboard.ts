@@ -10,6 +10,7 @@ import {
   promSchedules,
   promSubmissions,
   promTypes,
+  users,
 } from "../db/schema.js";
 import { requireAuthUser } from "../middleware/auth.js";
 import { requireRole } from "../middleware/rbac.js";
@@ -31,6 +32,22 @@ function getClinicId(
 }
 
 export const dashboardRouter = router({
+  clinicDoctors: protectedProcedure
+    .input(z.object({ clinicId: z.string().uuid().optional() }))
+    .query(async ({ ctx, input }) => {
+      requireRole(ctx, "MSO_ADMIN", "CLINIC_ADMIN", "CLINIC_USER", "CLINIC_DOCTOR");
+      const clinicId = getClinicId(ctx, input.clinicId);
+      const db = getDb();
+      return db
+        .select({
+          id: users.id,
+          fullName: users.fullName,
+          email: users.email,
+        })
+        .from(users)
+        .where(and(eq(users.clinicId, clinicId), eq(users.role, "CLINIC_DOCTOR"), eq(users.isActive, true)));
+    }),
+
   doctorSummary: protectedProcedure
     .input(z.object({ clinicId: z.string().uuid().optional() }))
     .query(async ({ ctx, input }) => {

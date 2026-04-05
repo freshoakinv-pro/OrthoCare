@@ -7,8 +7,11 @@ import { getDb } from "../db/index.js";
 import {
   appointments,
   clinicalEpisodes,
+  clinicalNotes,
   patients,
+  promSchedules,
   promSubmissions,
+  users,
 } from "../db/schema.js";
 import { assertClinicAccess, requireAuthUser } from "../middleware/auth.js";
 import { hashNric, validateNricChecksum } from "../lib/nric.js";
@@ -98,7 +101,47 @@ export const patientsRouter = router({
         .from(patients)
         .where(where!);
 
-      return { items: rows, total: c, page: input.page, pageSize: input.pageSize };
+      const enriched = await Promise.all(
+        rows.map(async (p) => {
+          const [activeEp] = await db
+            .select()
+            .from(clinicalEpisodes)
+            .where(
+              and(
+                eq(clinicalEpisodes.patientId, p.id),
+                eq(clinicalEpisodes.clinicId, clinicId),
+                eq(clinicalEpisodes.episodeStatus, "ACTIVE"),
+              ),
+            )
+            .limit(1);
+          const [latestProm] = await db
+            .select()
+            .from(promSubmissions)
+            .where(and(eq(promSubmissions.patientId, p.id), eq(promSubmissions.clinicId, clinicId)))
+            .orderBy(desc(promSubmissions.submittedAt))
+            .limit(1);
+          const [doc] = await db
+            .select({ fullName: users.fullName })
+            .from(users)
+            .where(eq(users.id, p.assignedDoctorId))
+            .limit(1);
+          return {
+            ...p,
+            activeEpisodeStatus: activeEp?.episodeStatus ?? null,
+            lastPromAt: latestProm?.submittedAt ?? null,
+            lastPromScore: latestProm?.totalScore ?? null,
+            lastPromInterpretation: latestProm?.scoreInterpretation ?? null,
+            assignedDoctorName: doc?.fullName ?? null,
+          };
+        }),
+      );
+
+      return {
+        items: enriched,
+        total: c,
+        page: input.page,
+        pageSize: input.pageSize,
+      };
     }),
 
   getById: protectedProcedure
@@ -144,7 +187,33 @@ export const patientsRouter = router({
         .orderBy(asc(appointments.scheduledAt))
         .limit(10);
 
-      return { patient: p, episodes, latestPromScores: latestProm, upcomingAppointments: upcoming };
+      const allAppointments = await db
+        .select()
+        .from(appointments)
+        .where(and(eq(appointments.patientId, p.id), eq(appointments.clinicId, p.clinicId)))
+        .orderBy(asc(appointments.scheduledAt));
+
+      const notes = await db
+        .select()
+        .from(clinicalNotes)
+        .where(and(eq(clinicalNotes.patientId, p.id), eq(clinicalNotes.clinicId, p.clinicId)))
+        .orderBy(desc(clinicalNotes.createdAt));
+
+      const [doc] = await db
+        .select({ fullName: users.fullName })
+        .from(users)
+        .where(eq(users.id, p.assignedDoctorId))
+        .limit(1);
+
+      return {
+        patient: p,
+        episodes,
+        latestPromScores: latestProm,
+        upcomingAppointments: upcoming,
+        allAppointments,
+        notes,
+        assignedDoctorName: doc?.fullName ?? null,
+      };
     }),
 
   create: protectedProcedure
@@ -199,6 +268,107 @@ export const patientsRouter = router({
         userId: input.userId ?? null,
       });
       return { id };
+    }),
+
+  registerWithEpisode: protectedProcedure
+    .input(
+      z.object({
+        clinicId: z.string().uuid().optional(),
+        nric: z.string().min(9).max(9),
+        fullName: z.string().min(1).max(255),
+        dateOfBirth: z.string(),
+        gender: z.string().min(1).max(32),
+        primaryComplaint: z.enum([
+          "KNEE",
+          "HIP",
+          "SHOULDER",
+          "SPINE",
+          "FOOT_ANKLE",
+          "HAND_WRIST",
+          "OTHER",
+        ]),
+        referralSource: z.enum(["GP_REFERRAL", "SELF", "INSURER", "OTHER"]),
+        insurer: z.enum([
+          "AIA",
+          "PRUDENTIAL",
+          "NTUC_INCOME",
+          "GREAT_EASTERN",
+          "OTHER",
+          "UNINSURED",
+        ]),
+        assignedDoctorId: z.string().uuid(),
+        diagnosisCode: z.string().min(1).max(32),
+        diagnosisLabel: z.string().min(1).max(512),
+        bodyRegion: z.enum([
+          "KNEE",
+          "HIP",
+          "SHOULDER",
+          "SPINE",
+          "FOOT_ANKLE",
+          "HAND_WRIST",
+          "OTHER",
+        ]),
+        laterality: z.enum(["LEFT", "RIGHT", "BILATERAL"]),
+        episodeNotes: z.string().optional(),
+        firstPromTypeId: z.number().int().positive().optional(),
+        firstPromFrequency: z
+          .enum(["ONE_TIME", "WEEKLY", "FORTNIGHTLY", "MONTHLY", "QUARTERLY"])
+          .optional(),
+        firstPromStartAt: z.coerce.date().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      requireRole(ctx, "MSO_ADMIN", "CLINIC_ADMIN", "CLINIC_USER", "CLINIC_DOCTOR");
+      if (!validateNricChecksum(input.nric)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid NRIC checksum" });
+      }
+      const clinicId = resolveClinicId(ctx, input.clinicId);
+      const db = getDb();
+      const patientId = randomUUID();
+      const episodeId = randomUUID();
+      await db.insert(patients).values({
+        id: patientId,
+        clinicId,
+        userId: null,
+        nricHash: hashNric(input.nric),
+        fullName: input.fullName,
+        dateOfBirth: input.dateOfBirth,
+        gender: input.gender,
+        primaryComplaint: input.primaryComplaint,
+        assignedDoctorId: input.assignedDoctorId,
+        referralSource: input.referralSource,
+        insurer: input.insurer,
+      });
+      await db.insert(clinicalEpisodes).values({
+        id: episodeId,
+        clinicId,
+        patientId,
+        doctorId: input.assignedDoctorId,
+        diagnosisCode: input.diagnosisCode,
+        diagnosisLabel: input.diagnosisLabel,
+        bodyRegion: input.bodyRegion,
+        laterality: input.laterality,
+        episodeStatus: "ACTIVE",
+        openedAt: new Date(),
+        notes: input.episodeNotes ?? null,
+      });
+      if (
+        input.firstPromTypeId &&
+        input.firstPromFrequency &&
+        input.firstPromStartAt
+      ) {
+        await db.insert(promSchedules).values({
+          id: randomUUID(),
+          clinicId,
+          patientId,
+          episodeId,
+          promTypeId: input.firstPromTypeId,
+          frequency: input.firstPromFrequency,
+          nextDueAt: input.firstPromStartAt,
+          isActive: true,
+        });
+      }
+      return { patientId, episodeId };
     }),
 
   update: protectedProcedure

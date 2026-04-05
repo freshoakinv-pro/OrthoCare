@@ -33,6 +33,11 @@ function getClinicId(
 }
 
 export const promsRouter = router({
+  listTypes: protectedProcedure.query(async () => {
+    const db = getDb();
+    return db.select().from(promTypes).orderBy(asc(promTypes.code));
+  }),
+
   getSchedules: protectedProcedure
     .input(
       z.object({

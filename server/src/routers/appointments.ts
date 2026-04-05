@@ -29,6 +29,7 @@ export const appointmentsRouter = router({
     .input(
       z.object({
         clinicId: z.string().uuid().optional(),
+        patientId: z.string().uuid().optional(),
         from: z.coerce.date().optional(),
         to: z.coerce.date().optional(),
         doctorId: z.string().uuid().optional(),
@@ -41,6 +42,7 @@ export const appointmentsRouter = router({
       const db = getDb();
       const u = requireAuthUser(ctx);
       const conds = [eq(appointments.clinicId, clinicId)];
+      if (input.patientId) conds.push(eq(appointments.patientId, input.patientId));
       if (input.from) conds.push(gte(appointments.scheduledAt, input.from));
       if (input.to) conds.push(lte(appointments.scheduledAt, input.to));
       if (input.doctorId) conds.push(eq(appointments.doctorId, input.doctorId));

@@ -7,6 +7,9 @@ import MsoDashboard from "@/pages/dashboard/MsoDashboard";
 import PatientDashboard from "@/pages/dashboard/PatientDashboard";
 import ClinicUserDashboard from "@/pages/dashboard/ClinicUserDashboard";
 import { PlaceholderPage } from "@/pages/_Placeholder";
+import PatientList from "@/pages/patients/PatientList";
+import PatientDetail from "@/pages/patients/PatientDetail";
+import RegisterPatient from "@/pages/patients/RegisterPatient";
 
 export default function App() {
   return (
@@ -21,9 +24,9 @@ export default function App() {
         <Route path="/patient/scores" element={<PlaceholderPage title="My Scores" />} />
         <Route path="/patient/appointments" element={<PlaceholderPage title="My appointments" />} />
         <Route path="/patient/pending-proms" element={<PlaceholderPage title="Pending PROMs" />} />
-        <Route path="/patients" element={<PlaceholderPage title="Patients" />} />
-        <Route path="/patients/:id" element={<PlaceholderPage title="Patient detail" />} />
-        <Route path="/patients/register" element={<PlaceholderPage title="Register patient" />} />
+        <Route path="/patients" element={<PatientList />} />
+        <Route path="/patients/register" element={<RegisterPatient />} />
+        <Route path="/patients/:id" element={<PatientDetail />} />
         <Route path="/appointments" element={<PlaceholderPage title="Appointments" />} />
         <Route path="/proms/schedules" element={<PlaceholderPage title="PROM schedules" />} />
         <Route path="/proms/results" element={<PlaceholderPage title="PROM results" />} />
