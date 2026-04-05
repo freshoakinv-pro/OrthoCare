@@ -54,6 +54,14 @@ export function Th({ children }: { children: ReactNode }) {
   );
 }
 
-export function Td({ children }: { children: ReactNode }) {
-  return <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>{children}</td>;
+export function Td({
+  children,
+  style,
+}: {
+  children: ReactNode;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <td style={{ padding: "12px 16px", verticalAlign: "middle", ...style }}>{children}</td>
+  );
 }
