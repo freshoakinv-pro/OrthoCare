@@ -13,6 +13,7 @@ import RegisterPatient from "@/pages/patients/RegisterPatient";
 import PromQuestionnaire from "@/pages/proms/PromQuestionnaire";
 import PromSchedules from "@/pages/proms/PromSchedules";
 import PromResults from "@/pages/proms/PromResults";
+import AppointmentCalendar from "@/pages/appointments/AppointmentCalendar";
 
 export default function App() {
   return (
@@ -31,7 +32,7 @@ export default function App() {
         <Route path="/patients" element={<PatientList />} />
         <Route path="/patients/register" element={<RegisterPatient />} />
         <Route path="/patients/:id" element={<PatientDetail />} />
-        <Route path="/appointments" element={<PlaceholderPage title="Appointments" />} />
+        <Route path="/appointments" element={<AppointmentCalendar />} />
         <Route path="/proms/schedules" element={<PromSchedules />} />
         <Route path="/proms/results" element={<PromResults />} />
         <Route path="/notes" element={<PlaceholderPage title="Notes" />} />
