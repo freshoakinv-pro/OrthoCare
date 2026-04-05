@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../trpc.js";
 import { getDb } from "../db/index.js";
@@ -70,11 +71,11 @@ export const authRouter = router({
         .where(eq(users.email, input.email))
         .limit(1);
       if (!user || !user.isActive) {
-        return { ok: false as const, error: "Invalid credentials" };
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
       }
       const ok = await verifyPassword(input.password, user.passwordHash);
       if (!ok) {
-        return { ok: false as const, error: "Invalid credentials" };
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
       }
       await db
         .update(users)
@@ -90,7 +91,6 @@ export const authRouter = router({
       setAuthCookies(ctx.res, accessToken, refreshToken);
 
       return {
-        ok: true as const,
         user: {
           userId: user.id,
           role: user.role,
