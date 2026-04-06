@@ -1,39 +1,46 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { trpc } from "@/lib/trpc";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth, setAuthHintInStorage } from "@/hooks/useAuth";
+import { dashboardPathForRole } from "@/lib/dashboardPath";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
-const redirectByRole: Record<string, string> = {
-  MSO_ADMIN: "/dashboard/mso",
-  CLINIC_ADMIN: "/dashboard/clinic",
-  CLINIC_USER: "/dashboard/clinic-user",
-  CLINIC_DOCTOR: "/dashboard/doctor",
-  PATIENT: "/patient/my-journey",
-};
-
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, isAuthenticating, login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const login = trpc.auth.login.useMutation();
-  const utils = trpc.useUtils();
+
+  useEffect(() => {
+    if (user) {
+      navigate(dashboardPathForRole(user.role), { replace: true });
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (searchParams.get("unauthorized") === "1") {
+      setAuthHintInStorage(false);
+      setError("Your session expired. Please sign in again.");
+    }
+  }, [searchParams]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      await login.mutateAsync({ email, password });
-      await utils.auth.me.invalidate();
-      const me = await utils.auth.me.fetch();
-      const path = redirectByRole[me.role] ?? "/dashboard/doctor";
-      navigate(path, { replace: true });
+      await login(email, password);
     } catch {
       setError("Invalid email or password.");
     }
   };
+
+  if (user) {
+    return null;
+  }
 
   return (
     <div
@@ -75,8 +82,8 @@ export default function LoginPage() {
             />
           </label>
           {error ? <p style={{ color: "var(--clay)", fontSize: "0.875rem" }}>{error}</p> : null}
-          <Button type="submit" disabled={login.isPending} style={{ width: "100%", marginTop: 8 }}>
-            {login.isPending ? "Signing in…" : "Sign in"}
+          <Button type="submit" disabled={isAuthenticating} style={{ width: "100%", marginTop: 8 }}>
+            {isAuthenticating ? "Signing in…" : "Sign in"}
           </Button>
         </form>
       </Card>

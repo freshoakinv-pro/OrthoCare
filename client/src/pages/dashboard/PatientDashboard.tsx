@@ -89,7 +89,7 @@ export default function PatientDashboard() {
         <Card>
           <h3 style={{ marginTop: 0 }}>Next assessment</h3>
           <p style={{ color: "var(--bark)" }}>Due {formatSgtDateOnly(nextDue.nextDueAt)}</p>
-          <NavLink to="/patient/pending-proms">
+          <NavLink to="/my-pending-proms">
             <Button>Complete PROM</Button>
           </NavLink>
         </Card>

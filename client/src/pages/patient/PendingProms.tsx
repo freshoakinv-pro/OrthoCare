@@ -23,7 +23,7 @@ export default function PendingProms() {
             <p style={{ marginTop: 0, fontWeight: 500 }}>Instrument #{s.promTypeId}</p>
             <p style={{ color: "var(--bark)", fontSize: "0.9rem" }}>Due {formatSgtDateOnly(s.nextDueAt)}</p>
             <p style={{ color: "var(--mist)", fontSize: "0.85rem" }}>About 5–15 minutes on your phone.</p>
-            <Link to={`/proms/questionnaire/${s.id}`}>
+            <Link to={`/proms/complete/${s.id}`}>
               <Button style={{ marginTop: 12 }}>Start assessment</Button>
             </Link>
           </Card>

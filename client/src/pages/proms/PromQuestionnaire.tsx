@@ -118,7 +118,7 @@ export default function PromQuestionnaire() {
           <p style={{ color: "var(--bark)", marginTop: 16 }}>
             Your score reflects how you&apos;re doing — keep going with your exercises and follow-ups.
           </p>
-          <Button style={{ marginTop: 16 }} variant="ghost" onClick={() => navigate("/patient/pending-proms")}>
+          <Button style={{ marginTop: 16 }} variant="ghost" onClick={() => navigate("/my-pending-proms")}>
             Back to list
           </Button>
         </div>

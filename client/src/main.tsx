@@ -6,9 +6,13 @@ import superjson from "superjson";
 import { BrowserRouter } from "react-router-dom";
 import { trpc } from "./lib/trpc";
 import App from "./App";
-import "./index.css";
+import "./styles/globals.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1 },
+  },
+});
 
 const trpcClient = trpc.createClient({
   links: [

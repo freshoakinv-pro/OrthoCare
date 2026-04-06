@@ -89,7 +89,7 @@ export default function PatientList() {
             </option>
           ))}
         </Select>
-        <Link to="/patients/register" style={{ alignSelf: "center" }}>
+        <Link to="/patients/new" style={{ alignSelf: "center" }}>
           Register patient
         </Link>
       </div>

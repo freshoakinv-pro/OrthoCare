@@ -8,37 +8,37 @@ import type { UserRole } from "@orthocare/shared";
 
 const navByRole: Record<UserRole, { to: string; label: string }[]> = {
   MSO_ADMIN: [
-    { to: "/dashboard/mso", label: "Dashboard" },
+    { to: "/admin", label: "Dashboard" },
     { to: "/clinics", label: "All Clinics" },
     { to: "/analytics", label: "Analytics" },
     { to: "/settings", label: "Settings" },
   ],
   CLINIC_ADMIN: [
-    { to: "/dashboard/clinic", label: "Dashboard" },
+    { to: "/dashboard", label: "Dashboard" },
     { to: "/patients", label: "Patients" },
     { to: "/appointments", label: "Appointments" },
-    { to: "/proms/schedules", label: "PROMs" },
+    { to: "/proms", label: "PROMs" },
     { to: "/reports", label: "Reports" },
     { to: "/settings", label: "Settings" },
   ],
   CLINIC_DOCTOR: [
-    { to: "/dashboard/doctor", label: "Dashboard" },
+    { to: "/dashboard", label: "Dashboard" },
     { to: "/patients", label: "My Patients" },
     { to: "/appointments", label: "Appointments" },
-    { to: "/proms/schedules", label: "PROMs" },
+    { to: "/proms", label: "PROMs" },
     { to: "/notes", label: "Notes" },
   ],
   CLINIC_USER: [
-    { to: "/dashboard/clinic-user", label: "Dashboard" },
+    { to: "/dashboard", label: "Dashboard" },
     { to: "/patients", label: "Patients" },
     { to: "/appointments", label: "Appointments" },
     { to: "/schedule", label: "Schedule" },
   ],
   PATIENT: [
-    { to: "/patient/my-journey", label: "My Journey" },
-    { to: "/patient/scores", label: "My Scores" },
-    { to: "/patient/appointments", label: "Appointments" },
-    { to: "/patient/pending-proms", label: "Complete PROMs" },
+    { to: "/my-journey", label: "My Journey" },
+    { to: "/my-scores", label: "My Scores" },
+    { to: "/my-appointments", label: "Appointments" },
+    { to: "/my-pending-proms", label: "Complete PROMs" },
   ],
 };
 
@@ -47,15 +47,13 @@ export function AppShell() {
   const me = trpc.auth.me.useQuery(undefined, { retry: false });
   const role = me.data?.role as UserRole | undefined;
 
-  const doctorQ = trpc.dashboard.doctorSummary.useQuery({}, {
-    enabled: role === "CLINIC_DOCTOR" && !!me.data,
-  });
+  const doctorQ = trpc.dashboard.doctorSummary.useQuery(
+    {},
+    { enabled: role === "CLINIC_DOCTOR" && !!me.data },
+  );
   const schedulesQ = trpc.proms.getSchedules.useQuery(
     {},
-    {
-      enabled:
-        (role === "CLINIC_ADMIN" || role === "CLINIC_USER") && !!me.data,
-    },
+    { enabled: (role === "CLINIC_ADMIN" || role === "CLINIC_USER") && !!me.data },
   );
 
   const overdue = useMemo(() => {
@@ -67,15 +65,14 @@ export function AppShell() {
       const now = Date.now();
       return (schedulesQ.data ?? []).filter(
         (s: { nextDueAt: Date }) => new Date(s.nextDueAt).getTime() <= now,
-      )
-        .length;
+      ).length;
     }
     return 0;
   }, [role, doctorQ.data, schedulesQ.data]);
 
   const logout = trpc.auth.logout.useMutation({
     onSuccess: () => {
-      navigate("/auth/login", { replace: true });
+      navigate("/login", { replace: true });
     },
   });
 
@@ -88,7 +85,7 @@ export function AppShell() {
   }
 
   if (me.isError || !me.data || !role) {
-    navigate("/auth/login", { replace: true });
+    navigate("/login", { replace: true });
     return null;
   }
 
@@ -125,7 +122,15 @@ export function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to.startsWith("/dashboard/") || item.to.startsWith("/patient/")}
+              end={
+                item.to === "/dashboard" ||
+                item.to === "/admin" ||
+                item.to === "/my-journey" ||
+                item.to === "/my-scores" ||
+                item.to === "/my-appointments" ||
+                item.to === "/my-pending-proms" ||
+                item.to === "/proms"
+              }
               style={({ isActive }: { isActive: boolean }) => ({
                 padding: "12px 20px",
                 textDecoration: "none",
@@ -198,7 +203,16 @@ export function AppShell() {
                 <div style={{ fontSize: "0.75rem", color: "var(--bark)" }}>{me.data.role}</div>
               </div>
             </div>
-            <Button variant="ghost" onClick={() => logout.mutate()} style={{ minHeight: 40, padding: "8px 14px" }}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.localStorage.removeItem("orthocare_authenticated");
+                }
+                logout.mutate();
+              }}
+              style={{ minHeight: 40, padding: "8px 14px" }}
+            >
               Log out
             </Button>
           </div>
