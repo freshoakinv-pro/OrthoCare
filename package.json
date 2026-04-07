@@ -7,6 +7,9 @@
     "build": "pnpm --filter @orthocare/shared build && pnpm --filter @orthocare/server build && pnpm --filter @orthocare/client build",
     "start": "pnpm --filter @orthocare/server start",
     "dev": "concurrently -n server,client -c blue,green \"pnpm --filter @orthocare/server dev\" \"pnpm --filter @orthocare/client dev\"",
+    "db:generate": "pnpm --filter @orthocare/server db:generate",
+    "db:migrate": "pnpm --filter @orthocare/server db:migrate",
+    "db:seed": "pnpm --filter @orthocare/server db:seed",
     "lint": "pnpm -r lint"
   },
   "devDependencies": {

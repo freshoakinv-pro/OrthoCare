@@ -5,14 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && rm -rf .vite-cache && vite build",
     "preview": "vite preview",
     "lint": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@orthocare/server": "workspace:*",
     "@orthocare/shared": "workspace:*",
+    "@tanstack/react-query": "^5.64.2",
+    "@trpc/client": "^11.0.0-rc.700",
+    "@trpc/react-query": "^11.0.0-rc.700",
+    "lucide-react": "^0.468.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.1",
+    "recharts": "^2.15.0",
+    "superjson": "^2.2.2"
   },
   "devDependencies": {
     "@types/react": "^19.0.7",
