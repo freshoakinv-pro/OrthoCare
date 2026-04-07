@@ -17,6 +17,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
+    "db:reset-migrations": "tsx src/db/resetMigrations.ts",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
