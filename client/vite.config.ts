@@ -4,6 +4,10 @@ import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
+  cacheDir: ".vite-cache",
+  build: {
+    rollupOptions: {},
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
