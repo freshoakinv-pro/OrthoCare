@@ -7,10 +7,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export async function runMigrations(): Promise<void> {
   const db = getDb();
+  const migrationsFolder = join(__dirname, "migrations");
+  console.log("Migrations folder:", migrationsFolder);
+
   try {
-    await migrate(db, {
-      migrationsFolder: join(__dirname, "migrations"),
-    });
+    await migrate(db, { migrationsFolder });
     console.log("Migrations complete");
   } catch (err: unknown) {
     const code =
